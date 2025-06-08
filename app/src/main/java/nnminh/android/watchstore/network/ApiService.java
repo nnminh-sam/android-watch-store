@@ -30,7 +30,7 @@ public interface ApiService {
     Call<ProductResponse> getProducts(@QueryMap Map<String, Object> request);
 
     @GET("products/{id}")
-    Call<Product> getProductById(@Path("id") String productId);
+    Call<ProductDetailResponse> getProductById(@Path("id") String productId);
 
 
     // ──────── Cart ────────

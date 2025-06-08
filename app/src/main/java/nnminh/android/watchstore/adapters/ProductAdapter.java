@@ -1,6 +1,7 @@
 package nnminh.android.watchstore.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 
 import nnminh.android.watchstore.R;
+import nnminh.android.watchstore.activities.ProductDetailActivity;
 import nnminh.android.watchstore.models.Brand;
 import nnminh.android.watchstore.models.Category;
 import nnminh.android.watchstore.models.Product;
@@ -75,7 +77,7 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             return new FooterViewHolder(view, paginationListener);
         } else {
             View view = LayoutInflater.from(context).inflate(R.layout.item_product, parent, false);
-            return new ProductViewHolder(view);
+            return new ProductViewHolder(view, context);
         }
     }
 
@@ -94,14 +96,16 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     // ------------------------------
-    // Product ViewHolder (no change)
+    // Product ViewHolder (with click)
     // ------------------------------
     static class ProductViewHolder extends RecyclerView.ViewHolder {
         ImageView imageProduct;
         TextView textName, textBrand, textCategories, textPrice, textSold, textAvailability;
+        Context context;
 
-        ProductViewHolder(@NonNull View itemView) {
+        ProductViewHolder(@NonNull View itemView, Context context) {
             super(itemView);
+            this.context = context;
             imageProduct = itemView.findViewById(R.id.imageProduct);
             textName = itemView.findViewById(R.id.textName);
             textBrand = itemView.findViewById(R.id.textBrand);
@@ -144,7 +148,7 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 textAvailability.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.white));
             } else {
                 textAvailability.setText("Out of stock");
-                textAvailability.setBackgroundResource(R.drawable.bg_availability_badge); // Or create bg_availability_badge_out_of_stock
+                textAvailability.setBackgroundResource(R.drawable.bg_availability_badge);
                 textAvailability.setTextColor(Color.RED);
             }
 
@@ -157,6 +161,13 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     .load(imageUrl)
                     .placeholder(R.drawable.ic_watch_placeholder)
                     .into(imageProduct);
+
+            // Product click listener: Open ProductDetailActivity
+            itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(context, ProductDetailActivity.class);
+                intent.putExtra("product_id", product.getId());
+                context.startActivity(intent);
+            });
         }
     }
 
