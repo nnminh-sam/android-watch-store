@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:paddingTop="8dp"
     android:layout_width="match_parent"
@@ -9,10 +10,12 @@
     <!-- Search Bar -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="40dp"
         android:orientation="horizontal"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
+        android:paddingRight="8dp"
+        android:paddingLeft="8dp"
         android:background="@drawable/bg_search_box"
         android:gravity="center_vertical">
 
@@ -23,20 +26,20 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:hint="Search watches..."
-            android:textSize="16sp"
+            android:textSize="12sp"
             android:paddingStart="10dp"
-            android:paddingEnd="10dp"/>
+            android:paddingEnd="10dp" />
 
         <ImageButton
             android:id="@+id/buttonSearch"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:scaleType="centerInside"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_search"
-            android:contentDescription="Search"
-            android:tint="@color/colorTextSecondary"
-            android:focusable="false"
-            android:clickable="true"/>
+            android:focusable="true"
+            android:clickable="true"
+            app:tint="@color/black" />
     </LinearLayout>
 
     <!-- Categories Horizontal List -->
@@ -50,7 +53,7 @@
         android:overScrollMode="never"
         android:scrollbars="none"/>
 
-    <!-- Filters: Price & Brand -->
+    <!-- Filters: Price, Brand, Clear Icon -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -64,24 +67,37 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Price: "
-            android:textSize="15sp"/>
+            android:textSize="12sp"/>
 
         <Spinner
             android:id="@+id/spinnerPrice"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="18dp"/>
+            android:layout_height="32dp"
+            android:spinnerMode="dropdown"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Brand: "
-            android:textSize="15sp"/>
+            android:textSize="12sp"/>
 
         <Spinner
             android:id="@+id/spinnerBrand"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="32dp"
+            android:spinnerMode="dropdown"/>
+
+        <ImageButton
+            android:id="@+id/buttonClearFilters"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_clear_filter"
+            android:background="@android:color/transparent"
+            android:focusable="true"
+            android:clickable="true"
+            android:layout_marginStart="6dp"
+            app:tint="@color/black"/>
     </LinearLayout>
 
     <!-- Product Grid -->

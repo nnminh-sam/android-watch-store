@@ -73,4 +73,11 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             textCategory = itemView.findViewById(R.id.textCategory);
         }
     }
+
+    public void setSelectedPosition(int pos) {
+        int prev = selectedPosition;
+        selectedPosition = pos;
+        notifyItemChanged(prev);
+        notifyItemChanged(selectedPosition);
+    }
 }

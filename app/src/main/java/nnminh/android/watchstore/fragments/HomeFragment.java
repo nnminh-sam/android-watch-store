@@ -37,12 +37,13 @@ public class HomeFragment extends Fragment {
     private EditText editTextSearch;
     private ImageButton buttonSearch;
     private Spinner spinnerPrice, spinnerBrand;
+    private ImageButton buttonClearFilters;
 
     private List<Category> categoryList = new ArrayList<>();
     private List<Brand> brandList = new ArrayList<>();
     private String selectedCategoryName = null;
     private String selectedBrandName = null;
-    private Double minPrice = null, maxPrice = null;
+    private Long minPrice = null, maxPrice = null;
 
     @Nullable
     @Override
@@ -58,6 +59,10 @@ public class HomeFragment extends Fragment {
         buttonSearch = view.findViewById(R.id.buttonSearch);
         spinnerPrice = view.findViewById(R.id.spinnerPrice);
         spinnerBrand = view.findViewById(R.id.spinnerBrand);
+        buttonClearFilters = view.findViewById(R.id.buttonClearFilters);
+
+        // Clear filter button
+        buttonClearFilters.setOnClickListener(v -> clearFilters());
 
         // Setup RecyclerViews
         recyclerViewProducts.setLayoutManager(new GridLayoutManager(getContext(), 2));
@@ -74,18 +79,19 @@ public class HomeFragment extends Fragment {
 
         // Setup price filter spinner
         ArrayAdapter<String> priceAdapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_spinner_dropdown_item,
+                R.layout.spinner_item_small,
                 new String[]{"All", "Below 2M", "2M–5M", "5M–10M", "Above 10M"});
+        priceAdapter.setDropDownViewResource(R.layout.spinner_item_small);
         spinnerPrice.setAdapter(priceAdapter);
 
         spinnerPrice.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
                     case 0: minPrice = null; maxPrice = null; break;
-                    case 1: minPrice = null; maxPrice = 2000000d; break;
-                    case 2: minPrice = 2000000d; maxPrice = 5000000d; break;
-                    case 3: minPrice = 5000000d; maxPrice = 10000000d; break;
-                    case 4: minPrice = 10000000d; maxPrice = null; break;
+                    case 1: minPrice = null; maxPrice = 2000000L; break;
+                    case 2: minPrice = 2000000L; maxPrice = 5000000L; break;
+                    case 3: minPrice = 5000000L; maxPrice = 10000000L; break;
+                    case 4: minPrice = 10000000L; maxPrice = null; break;
                 }
                 filterProducts();
             }
@@ -155,8 +161,9 @@ public class HomeFragment extends Fragment {
                     List<String> brandNames = new ArrayList<>();
                     brandNames.add("All");
                     for (Brand b : brandList) brandNames.add(b.getName());
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
-                            android.R.layout.simple_spinner_dropdown_item, brandNames);
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                            requireContext(),
+                            R.layout.spinner_item_small, brandNames);
                     spinnerBrand.setAdapter(adapter);
                     spinnerBrand.setSelection(0);
                 }
@@ -178,6 +185,8 @@ public class HomeFragment extends Fragment {
         if (selectedBrandName != null) request.setBrandName(selectedBrandName);
         if (minPrice != null) request.setMin_price(minPrice);
         if (maxPrice != null) request.setMax_price(maxPrice);
+
+        System.out.println("Filter: " + request.toString());
 
         ApiService apiService = ApiClient.getClient(getContext()).create(ApiService.class);
         Call<ProductResponse> call = apiService.getProducts(FilterRequest.filterRequestToMap(request));
@@ -203,5 +212,32 @@ public class HomeFragment extends Fragment {
                 recyclerViewProducts.setVisibility(View.GONE);
             }
         });
+    }
+
+    private void clearFilters() {
+        // Reset search bar
+        editTextSearch.setText("");
+
+        // Reset category to "All Categories"
+        if (categoryAdapter != null) {
+            // If adapter follows previous implementation, "All Categories" is at position 0
+            recyclerViewCategories.smoothScrollToPosition(0);
+            categoryAdapter.setSelectedPosition(0);
+        }
+        selectedCategoryName = null;
+
+        // Reset brand spinner to "All Brands"
+        if (spinnerBrand.getAdapter() != null && spinnerBrand.getAdapter().getCount() > 0) {
+            spinnerBrand.setSelection(0);
+        }
+        selectedBrandName = null;
+
+        // Reset price spinner to "All"
+        spinnerPrice.setSelection(0);
+        minPrice = null;
+        maxPrice = null;
+
+        // Trigger a full filter refresh
+        filterProducts();
     }
 }
