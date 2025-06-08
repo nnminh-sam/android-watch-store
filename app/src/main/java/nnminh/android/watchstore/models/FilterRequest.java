@@ -9,6 +9,8 @@ public class FilterRequest {
     private Long min_price;
     private Long max_price;
     private String categoryName;
+    private int page;
+    private int size;
 
     public FilterRequest() {
     }
@@ -61,6 +63,22 @@ public class FilterRequest {
         this.categoryName = categoryName;
     }
 
+    public int getPage() {
+        return page;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
+    }
+
     public static Map<String, Object> filterRequestToMap(FilterRequest filter) {
         Map<String, Object> map = new HashMap<>();
         if (filter.getName() != null) map.put("name", filter.getName());
@@ -68,7 +86,8 @@ public class FilterRequest {
         if (filter.getMin_price() != null) map.put("min_price", filter.getMin_price());
         if (filter.getMax_price() != null) map.put("max_price", filter.getMax_price());
         if (filter.getCategoryName() != null) map.put("category", filter.getCategoryName());
-        System.out.println("Filter map: " + map);
+        if (filter.getPage() != 0) map.put("page", filter.getPage());
+        if (filter.getSize() != 0) map.put("size", filter.getSize());
         return map;
     }
 
@@ -80,6 +99,8 @@ public class FilterRequest {
                 ", min_price=" + min_price +
                 ", max_price=" + max_price +
                 ", categoryName='" + categoryName + '\'' +
+                ", page=" + page +
+                ", size=" + size +
                 '}';
     }
 }

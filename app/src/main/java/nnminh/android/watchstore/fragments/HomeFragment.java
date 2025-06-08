@@ -35,15 +35,17 @@ public class HomeFragment extends Fragment {
     private ProgressBar progressBar;
     private TextView textError;
     private EditText editTextSearch;
-    private ImageButton buttonSearch;
+    private ImageButton buttonSearch, buttonClearFilters;
     private Spinner spinnerPrice, spinnerBrand;
-    private ImageButton buttonClearFilters;
 
     private List<Category> categoryList = new ArrayList<>();
     private List<Brand> brandList = new ArrayList<>();
     private String selectedCategoryName = null;
     private String selectedBrandName = null;
     private Long minPrice = null, maxPrice = null;
+
+    private int currentPage = 1;
+    private int totalPages = 1;
 
     @Nullable
     @Override
@@ -61,26 +63,35 @@ public class HomeFragment extends Fragment {
         spinnerBrand = view.findViewById(R.id.spinnerBrand);
         buttonClearFilters = view.findViewById(R.id.buttonClearFilters);
 
-        // Clear filter button
-        buttonClearFilters.setOnClickListener(v -> clearFilters());
-
         // Setup RecyclerViews
         recyclerViewProducts.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        productAdapter = new ProductAdapter(getContext(), null);
+        productAdapter = new ProductAdapter(getContext(), null, false, 1, 1,
+                new ProductAdapter.PaginationListener() {
+                    @Override public void onPrev() { goToPage(currentPage - 1); }
+                    @Override public void onNext() { goToPage(currentPage + 1); }
+                }
+        );
         recyclerViewProducts.setAdapter(productAdapter);
 
         recyclerViewCategories.setLayoutManager(
                 new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         categoryAdapter = new CategoryAdapter(new ArrayList<>(), (category, position) -> {
-            selectedCategoryName = category.getName();
+            if (position == 0) {
+                selectedCategoryName = null;
+            } else {
+                selectedCategoryName = category.getName();
+            }
+            currentPage = 1;
             filterProducts();
         });
         recyclerViewCategories.setAdapter(categoryAdapter);
 
-        // Setup price filter spinner
-        ArrayAdapter<String> priceAdapter = new ArrayAdapter<>(requireContext(),
+        // Setup price filter spinner with small text size
+        ArrayAdapter<String> priceAdapter = new ArrayAdapter<>(
+                requireContext(),
                 R.layout.spinner_item_small,
-                new String[]{"All", "Below 2M", "2M–5M", "5M–10M", "Above 10M"});
+                new String[]{"All", "Below 2M", "2M–5M", "5M–10M", "Above 10M"}
+        );
         priceAdapter.setDropDownViewResource(R.layout.spinner_item_small);
         spinnerPrice.setAdapter(priceAdapter);
 
@@ -93,13 +104,17 @@ public class HomeFragment extends Fragment {
                     case 3: minPrice = 5000000L; maxPrice = 10000000L; break;
                     case 4: minPrice = 10000000L; maxPrice = null; break;
                 }
+                currentPage = 1;
                 filterProducts();
             }
             @Override public void onNothingSelected(AdapterView<?> parent) { }
         });
 
         // Setup search button
-        buttonSearch.setOnClickListener(v -> filterProducts());
+        buttonSearch.setOnClickListener(v -> {
+            currentPage = 1;
+            filterProducts();
+        });
 
         // Setup brand spinner (populated after brands are fetched)
         spinnerBrand.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -109,10 +124,13 @@ public class HomeFragment extends Fragment {
                 } else {
                     selectedBrandName = brandList.get(position - 1).getName();
                 }
+                currentPage = 1;
                 filterProducts();
             }
             @Override public void onNothingSelected(AdapterView<?> parent) { }
         });
+
+        buttonClearFilters.setOnClickListener(v -> clearFilters());
 
         fetchCategories();
         fetchBrands();
@@ -140,6 +158,7 @@ public class HomeFragment extends Fragment {
                         } else {
                             selectedCategoryName = category.getName();
                         }
+                        currentPage = 1;
                         filterProducts();
                     });
                     recyclerViewCategories.setAdapter(categoryAdapter);
@@ -163,7 +182,10 @@ public class HomeFragment extends Fragment {
                     for (Brand b : brandList) brandNames.add(b.getName());
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(
                             requireContext(),
-                            R.layout.spinner_item_small, brandNames);
+                            R.layout.spinner_item_small,
+                            brandNames
+                    );
+                    adapter.setDropDownViewResource(R.layout.spinner_item_small);
                     spinnerBrand.setAdapter(adapter);
                     spinnerBrand.setSelection(0);
                 }
@@ -185,8 +207,7 @@ public class HomeFragment extends Fragment {
         if (selectedBrandName != null) request.setBrandName(selectedBrandName);
         if (minPrice != null) request.setMin_price(minPrice);
         if (maxPrice != null) request.setMax_price(maxPrice);
-
-        System.out.println("Filter: " + request.toString());
+        request.setPage(currentPage);
 
         ApiService apiService = ApiClient.getClient(getContext()).create(ApiService.class);
         Call<ProductResponse> call = apiService.getProducts(FilterRequest.filterRequestToMap(request));
@@ -196,9 +217,22 @@ public class HomeFragment extends Fragment {
             public void onResponse(@NonNull Call<ProductResponse> call, @NonNull Response<ProductResponse> response) {
                 progressBar.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null && !response.body().getProducts().isEmpty()) {
-                    productAdapter.setProductList(response.body().getProducts());
+                    // Pagination handling
+                    Pagination pagination = response.body().getPagination();
+                    if (pagination != null) {
+                        currentPage = pagination.getPage();
+                        totalPages = pagination.getTotal_pages();
+                    } else {
+                        currentPage = 1;
+                        totalPages = 1;
+                    }
+                    boolean showFooter = totalPages > 1;
+                    productAdapter.update(response.body().getProducts(), currentPage, totalPages, showFooter);
                     recyclerViewProducts.setVisibility(View.VISIBLE);
+                    recyclerViewProducts.scrollToPosition(0);
                 } else {
+                    productAdapter.update(new ArrayList<>(), 1, 1, false);
+                    recyclerViewProducts.scrollToPosition(0);
                     textError.setText("No products found");
                     textError.setVisibility(View.VISIBLE);
                     recyclerViewProducts.setVisibility(View.GONE);
@@ -207,6 +241,8 @@ public class HomeFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Call<ProductResponse> call, @NonNull Throwable t) {
                 progressBar.setVisibility(View.GONE);
+                productAdapter.update(new ArrayList<>(), 1, 1, false);
+                recyclerViewProducts.scrollToPosition(0);
                 textError.setText("Failed to load products");
                 textError.setVisibility(View.VISIBLE);
                 recyclerViewProducts.setVisibility(View.GONE);
@@ -215,29 +251,27 @@ public class HomeFragment extends Fragment {
     }
 
     private void clearFilters() {
-        // Reset search bar
         editTextSearch.setText("");
-
-        // Reset category to "All Categories"
         if (categoryAdapter != null) {
-            // If adapter follows previous implementation, "All Categories" is at position 0
             recyclerViewCategories.smoothScrollToPosition(0);
             categoryAdapter.setSelectedPosition(0);
         }
         selectedCategoryName = null;
-
-        // Reset brand spinner to "All Brands"
         if (spinnerBrand.getAdapter() != null && spinnerBrand.getAdapter().getCount() > 0) {
             spinnerBrand.setSelection(0);
         }
         selectedBrandName = null;
-
-        // Reset price spinner to "All"
         spinnerPrice.setSelection(0);
         minPrice = null;
         maxPrice = null;
-
-        // Trigger a full filter refresh
+        currentPage = 1;
         filterProducts();
+    }
+
+    private void goToPage(int page) {
+        if (page >= 1 && page <= totalPages && page != currentPage) {
+            currentPage = page;
+            filterProducts();
+        }
     }
 }
