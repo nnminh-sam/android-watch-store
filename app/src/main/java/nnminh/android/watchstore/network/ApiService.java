@@ -1,6 +1,7 @@
 package nnminh.android.watchstore.network;
 
 import java.util.List;
+import java.util.Map;
 
 import nnminh.android.watchstore.models.*;
 import retrofit2.Call;
@@ -26,18 +27,10 @@ public interface ApiService {
     // ──────── Products ────────
 
     @GET("products")
-    Call<ProductResponse> getProducts();
+    Call<ProductResponse> getProducts(@QueryMap Map<String, Object> request);
 
     @GET("products/{id}")
     Call<Product> getProductById(@Path("id") String productId);
-
-    @GET("products/filter")
-    Call<List<Product>> filterProducts(
-            @Query("brand") String brand,
-            @Query("minPrice") Double minPrice,
-            @Query("maxPrice") Double maxPrice,
-            @Query("category") String category
-    );
 
 
     // ──────── Cart ────────
@@ -82,8 +75,8 @@ public interface ApiService {
     // ──────── Categories & Brands ────────
 
     @GET("categories")
-    Call<List<Category>> getCategories();
+    Call<CategoryResponse> getCategories();
 
     @GET("brands")
-    Call<List<Brand>> getBrands();
+    Call<BrandResponse> getBrands();
 }
