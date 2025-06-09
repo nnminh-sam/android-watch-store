@@ -1,5 +1,7 @@
 package nnminh.android.watchstore.fragments;
 
+import android.net.Uri;
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,21 +21,30 @@ import nnminh.android.watchstore.models.*;
 import nnminh.android.watchstore.network.ApiClient;
 import nnminh.android.watchstore.network.ApiService;
 import nnminh.android.watchstore.auth.TokenManager;
+import nnminh.android.watchstore.utils.FileUtils;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ProfileFragment extends Fragment {
+    private static final int REQUEST_PICK_IMAGE = 1001;
+    private Uri selectedImageUri;
 
     private ImageView imageAvatar;
-    private Button buttonChangeAvatar, buttonChangePassword, buttonSave;
+    private Button buttonChangePassword, buttonSave;
     private TextView textEmail, textError, textOrdersTitle;
     private EditText editFirstName, editLastName, editPhone, editDob;
     private Spinner spinnerGender;
     private ProgressBar progressBar;
     private RecyclerView recyclerViewOrders;
+    private ImageButton buttonEditAvatar, buttonLogout;
 
     private OrderAdapter orderAdapter;
     private List<Order> orderList = new ArrayList<>();
@@ -51,7 +62,6 @@ public class ProfileFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         imageAvatar = view.findViewById(R.id.imageAvatar);
-        buttonChangeAvatar = view.findViewById(R.id.buttonChangeAvatar);
         buttonChangePassword = view.findViewById(R.id.buttonChangePassword);
         buttonSave = view.findViewById(R.id.buttonSave);
         textEmail = view.findViewById(R.id.textEmail);
@@ -65,6 +75,25 @@ public class ProfileFragment extends Fragment {
         recyclerViewOrders = view.findViewById(R.id.recyclerViewOrders);
         textOrdersTitle = view.findViewById(R.id.textOrdersTitle);
 
+        buttonEditAvatar = view.findViewById(R.id.buttonEditAvatar);
+        buttonLogout = view.findViewById(R.id.buttonLogout);
+
+        buttonEditAvatar.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            startActivityForResult(Intent.createChooser(intent, "Select Avatar"), REQUEST_PICK_IMAGE);
+        });
+
+        buttonLogout.setOnClickListener(v -> {
+            // Remove tokens and user info
+            TokenManager.getInstance(requireContext()).deleteToken();
+            TokenManager.getInstance(requireContext()).deleteUser();
+            Toast.makeText(getContext(), "Logged out.", Toast.LENGTH_SHORT).show();
+            // Return user to login screen
+            requireActivity().finishAffinity();
+            startActivity(new Intent(getContext(), nnminh.android.watchstore.activities.LoginActivity.class));
+        });
+
         // Gender spinner
         ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(
                 requireContext(), android.R.layout.simple_spinner_dropdown_item,
@@ -77,11 +106,6 @@ public class ProfileFragment extends Fragment {
         orderAdapter = new OrderAdapter(orderList);
         recyclerViewOrders.setAdapter(orderAdapter);
 
-        buttonChangeAvatar.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Change Avatar coming soon!", Toast.LENGTH_SHORT).show();
-            // Here you would launch image picker logic
-        });
-
         buttonChangePassword.setOnClickListener(v -> {
             startActivity(new Intent(getContext(), ChangePasswordActivity.class));
         });
@@ -93,6 +117,75 @@ public class ProfileFragment extends Fragment {
         loadProfileAndOrders();
 
         return view;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+            selectedImageUri = data.getData();
+            imageAvatar.setImageURI(selectedImageUri);
+            uploadAvatar(selectedImageUri);
+        }
+    }
+
+    private void uploadAvatar(Uri imageUri) {
+        if (imageUri == null) return;
+        showLoading(true);
+        File file = FileUtils.getFileFromUri(requireContext(), imageUri);
+        if (file == null) {
+            showLoading(false);
+            Toast.makeText(getContext(), "Could not read image file.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String mimeType = requireContext().getContentResolver().getType(imageUri);
+        if (mimeType == null) mimeType = "image/png";
+        RequestBody reqFile = RequestBody.create(file, MediaType.parse(mimeType));
+        MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), reqFile);
+
+        String token = TokenManager.getInstance(requireContext()).getToken();
+        ApiService apiService = ApiClient.getClient(requireContext()).create(ApiService.class);
+
+        apiService.updateAvatar(token, body).enqueue(new Callback<BaseResponse>() {
+            @Override
+            public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    // Success: Now fetch the updated user profile
+                    fetchUserProfileAfterAvatar();
+                    Toast.makeText(getContext(), "Avatar updated!", Toast.LENGTH_SHORT).show();
+                } else {
+                    showLoading(false);
+                    Toast.makeText(getContext(), "Failed to update avatar.", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<BaseResponse> call, Throwable t) {
+                showLoading(false);
+                Toast.makeText(getContext(), "Network error.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // New helper method to fetch profile
+    private void fetchUserProfileAfterAvatar() {
+        String token = TokenManager.getInstance(requireContext()).getToken();
+        ApiService apiService = ApiClient.getClient(requireContext()).create(ApiService.class);
+        apiService.getUserProfile(token).enqueue(new Callback<UserResponse>() {
+            @Override
+            public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
+                showLoading(false);
+                if (response.isSuccessful() && response.body() != null) {
+                    bindUserProfile(response.body().getUser());
+                } else {
+                    Toast.makeText(getContext(), "Failed to reload profile.", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<UserResponse> call, Throwable t) {
+                showLoading(false);
+                Toast.makeText(getContext(), "Network error.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void loadProfileAndOrders() {
@@ -155,15 +248,15 @@ public class ProfileFragment extends Fragment {
         } else {
             imageAvatar.setImageResource(R.drawable.ic_avatar_placeholder);
         }
-        textEmail.setText(user.getEmail());
+        textEmail.setText("Email: " + user.getEmail());
         editFirstName.setText(user.getfirst_name());
         editLastName.setText(user.getlast_name());
         editPhone.setText(user.getphone_number());
-        // Gender
+        // * Gender
         if ("male".equalsIgnoreCase(user.getGender())) spinnerGender.setSelection(0);
         else if ("female".equalsIgnoreCase(user.getGender())) spinnerGender.setSelection(1);
         else spinnerGender.setSelection(2);
-        // Date of birth
+        // * Date of birth
         if (!TextUtils.isEmpty(user.getDate_of_birth().toString())) {
             editDob.setText(user.getDate_of_birth().toString());
             try {

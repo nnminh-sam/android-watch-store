@@ -1,9 +1,9 @@
 package nnminh.android.watchstore.network;
 
-import java.util.List;
 import java.util.Map;
 
 import nnminh.android.watchstore.models.*;
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.*;
 
@@ -23,7 +23,12 @@ public interface ApiService {
     @PATCH("users")
     Call<UserResponse> updateProfile(@Header("Authorization") String token, @Body UpdateProfileRequest request);
 
-//    Call<BaseResponse> updateAvatar(@Header("Authorization") String token, @Body UpdateAvatarRequest request);
+    @Multipart
+    @PATCH("users/avatar")
+    Call<BaseResponse> updateAvatar(
+            @Header("Authorization") String token,
+            @Part MultipartBody.Part file
+    );
 
     // ──────── Products ────────
 

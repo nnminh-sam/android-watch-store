@@ -59,15 +59,12 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             textOrderId.setText("Order #" + order.getId());
 
             // Format date
-            String dateStr = order.getCreated_at().toString();
-            try {
-                SimpleDateFormat iso = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
-                Date date = iso.parse(order.getCreated_at().toString());
-                if (date != null) {
-                    SimpleDateFormat out = new SimpleDateFormat("dd MMM yyyy", Locale.US);
-                    dateStr = out.format(date);
-                }
-            } catch (Exception ignored) {}
+            Date date = order.getCreated_at();
+            String dateStr = "";
+            if (date != null) {
+                SimpleDateFormat out = new SimpleDateFormat("dd MMM yyyy", Locale.US);
+                dateStr = out.format(date);
+            }
             textOrderDate.setText(dateStr);
 
             // Format total
