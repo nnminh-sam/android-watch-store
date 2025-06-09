@@ -1,47 +1,17 @@
 package nnminh.android.watchstore.models;
 
 public class UpdateProfileRequest {
-    private String firstName;
-    private String lastName;
-    private String phone;
-    private String address;
+    private String first_name;
+    private String last_name;
+    private String gender;
+    private String phone_number;
+    private String date_of_birth;
 
-    public UpdateProfileRequest(String firstName, String lastName, String phone, String address) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.phone = phone;
-        this.address = address;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
+    public UpdateProfileRequest(String first_name, String last_name, String gender, String phone_number, String date_of_birth) {
+        this.first_name = first_name;
+        this.last_name = last_name;
+        this.gender = gender;
+        this.phone_number = phone_number;
+        this.date_of_birth = date_of_birth;
     }
 }

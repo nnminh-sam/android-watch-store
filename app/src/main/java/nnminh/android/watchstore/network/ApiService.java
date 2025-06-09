@@ -17,12 +17,13 @@ public interface ApiService {
     @POST("auth/sign-in")
     Call<AuthResponse> login(@Body LoginRequest request);
 
-    @GET("users/me")
-    Call<UserProfile> getUserProfile(@Header("Authorization") String token);
+    @GET("users/my")
+    Call<UserResponse> getUserProfile(@Header("Authorization") String token);
 
-    @PUT("users/me")
-    Call<UserProfile> updateProfile(@Header("Authorization") String token, @Body UpdateProfileRequest request);
+    @PATCH("users")
+    Call<UserResponse> updateProfile(@Header("Authorization") String token, @Body UpdateProfileRequest request);
 
+//    Call<BaseResponse> updateAvatar(@Header("Authorization") String token, @Body UpdateAvatarRequest request);
 
     // ──────── Products ────────
 
@@ -55,25 +56,13 @@ public interface ApiService {
     // ──────── Orders ────────
 
     @GET("orders")
-    Call<List<Order>> getOrders(@Header("Authorization") String token);
+    Call<OrderResponse> getOrders(@Header("Authorization") String token);
 
     @GET("orders/{id}")
-    Call<Order> getOrderById(@Header("Authorization") String token, @Path("id") String orderId);
+    Call<SingleOrderResponse> getOrderById(@Header("Authorization") String token, @Path("id") String orderId);
 
     @POST("orders")
-    Call<OrderResponse> placeOrder(@Header("Authorization") String token, @Body OrderRequest request);
-
-
-    // ──────── Favorites ────────
-
-    @GET("favorites")
-    Call<List<Product>> getFavorites(@Header("Authorization") String token);
-
-    @POST("favorites")
-    Call<ApiMessage> addToFavorites(@Header("Authorization") String token, @Body FavoriteRequest request);
-
-    @DELETE("favorites/{productId}")
-    Call<ApiMessage> removeFromFavorites(@Header("Authorization") String token, @Path("productId") String productId);
+    Call<SingleOrderResponse> placeOrder(@Header("Authorization") String token, @Body OrderRequest request);
 
 
     // ──────── Categories & Brands ────────

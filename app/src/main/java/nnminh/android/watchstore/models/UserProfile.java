@@ -1,16 +1,20 @@
 package nnminh.android.watchstore.models;
 
+import java.util.Date;
+
 public class UserProfile {
     private String id;
     private String email;
     private String password;
-    private String firstName;
-    private String lastName;
-    private String phone;
-    private String address;
+    private String first_name;
+    private String last_name;
+    private String phone_number;
+    private String gender;
+    private Date date_of_birth;
     private String role;
-    private String createdAt;
-    private String updatedAt;
+    private String avatar;
+    private String created_at;
+    private String updated_at;
 
     public String getId() {
         return id;
@@ -36,36 +40,28 @@ public class UserProfile {
         this.password = password;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getfirst_name() {
+        return first_name;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setfirst_name(String first_name) {
+        this.first_name = first_name;
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getlast_name() {
+        return last_name;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setlast_name(String last_name) {
+        this.last_name = last_name;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getphone_number() {
+        return phone_number;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
+    public void setphone_number(String phone_number) {
+        this.phone_number = phone_number;
     }
 
     public String getRole() {
@@ -76,19 +72,43 @@ public class UserProfile {
         this.role = role;
     }
 
-    public String getCreatedAt() {
-        return createdAt;
+    public String getcreated_at() {
+        return created_at;
     }
 
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
+    public void setcreated_at(String created_at) {
+        this.created_at = created_at;
     }
 
-    public String getUpdatedAt() {
-        return updatedAt;
+    public String getupdated_at() {
+        return updated_at;
     }
 
-    public void setUpdatedAt(String updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setupdated_at(String updated_at) {
+        this.updated_at = updated_at;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public Date getDate_of_birth() {
+        return date_of_birth;
+    }
+
+    public void setDate_of_birth(Date date_of_birth) {
+        this.date_of_birth = date_of_birth;
     }
 }

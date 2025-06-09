@@ -1,14 +1,28 @@
 package nnminh.android.watchstore.models;
 
+import java.util.List;
+
 public class OrderItem {
     private String id;
-    private String orderId;
-    private String productId;
+    private String product_id;
+    private String name;
+    private List<Spec> specs;
     private int quantity;
-    private double price;
-    private String createdAt;
-    private String updatedAt;
-    private Product product;
+    private Long price;
+    private String asset;
+
+    public OrderItem() {
+    }
+
+    public OrderItem(String id, String product_id, String name, List<Spec> specs, int quantity, Long price, String asset) {
+        this.id = id;
+        this.product_id = product_id;
+        this.name = name;
+        this.specs = specs;
+        this.quantity = quantity;
+        this.price = price;
+        this.asset = asset;
+    }
 
     public String getId() {
         return id;
@@ -18,20 +32,28 @@ public class OrderItem {
         this.id = id;
     }
 
-    public String getOrderId() {
-        return orderId;
+    public String getProduct_id() {
+        return product_id;
     }
 
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
+    public void setProduct_id(String product_id) {
+        this.product_id = product_id;
     }
 
-    public String getProductId() {
-        return productId;
+    public String getName() {
+        return name;
     }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<Spec> getSpecs() {
+        return specs;
+    }
+
+    public void setSpecs(List<Spec> specs) {
+        this.specs = specs;
     }
 
     public int getQuantity() {
@@ -42,35 +64,19 @@ public class OrderItem {
         this.quantity = quantity;
     }
 
-    public double getPrice() {
+    public Long getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Long price) {
         this.price = price;
     }
 
-    public String getCreatedAt() {
-        return createdAt;
+    public String getAsset() {
+        return asset;
     }
 
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(String updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
+    public void setAsset(String asset) {
+        this.asset = asset;
     }
 }
