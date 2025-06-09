@@ -18,10 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nnminh.android.watchstore.R;
+import nnminh.android.watchstore.auth.TokenManager;
+import nnminh.android.watchstore.models.CartResponse;
+import nnminh.android.watchstore.models.CreateCartItemRequest;
 import nnminh.android.watchstore.models.Product;
 import nnminh.android.watchstore.models.ProductDetailResponse;
 import nnminh.android.watchstore.network.ApiClient;
 import nnminh.android.watchstore.network.ApiService;
+import nnminh.android.watchstore.utils.CartBadgeHelper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -29,9 +33,12 @@ import retrofit2.Response;
 public class ProductDetailActivity extends AppCompatActivity {
     private ImageButton buttonBack, buttonAddToCart;
     private ProgressBar progressBar;
-    private TextView textName, textBrand, textPrice, textStock, textSold, textCategories, textDesc, textError;
+    private TextView textName, textBrand, textPrice, textSold, textCategories, textDesc, textError;
     private RecyclerView recyclerViewImages;
     private ImagesAdapter imagesAdapter;
+    private ImageButton buttonMinusQuantity, buttonPlusQuantity;
+    private TextView textQuantity;
+    private int currentQuantity = 1;
 
     private String productId;
     private Product product;
@@ -53,12 +60,26 @@ public class ProductDetailActivity extends AppCompatActivity {
         textName = findViewById(R.id.textName);
         textBrand = findViewById(R.id.textBrand);
         textPrice = findViewById(R.id.textPrice);
-        textStock = findViewById(R.id.textStock);
         textSold = findViewById(R.id.textSold);
         textCategories = findViewById(R.id.textCategories);
         textDesc = findViewById(R.id.textDesc);
         textError = findViewById(R.id.textError);
         recyclerViewImages = findViewById(R.id.recyclerViewImages);
+        buttonMinusQuantity = findViewById(R.id.buttonMinusQuantity);
+        buttonPlusQuantity = findViewById(R.id.buttonPlusQuantity);
+        textQuantity = findViewById(R.id.textQuantity);
+
+        buttonMinusQuantity.setOnClickListener(v -> {
+            if (currentQuantity > 1) {
+                currentQuantity--;
+                textQuantity.setText(String.valueOf(currentQuantity));
+            }
+        });
+        buttonPlusQuantity.setOnClickListener(v -> {
+            currentQuantity++;
+            textQuantity.setText(String.valueOf(currentQuantity));
+        });
+        textQuantity.setText(String.valueOf(currentQuantity));
 
         imagesAdapter = new ImagesAdapter(new ArrayList<>());
         recyclerViewImages.setAdapter(imagesAdapter);
@@ -68,12 +89,40 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         buttonAddToCart.setOnClickListener(v -> {
             if (product != null) {
-                // TODO: Implement add-to-cart API
-                Toast.makeText(this, "Added to cart (stub)", Toast.LENGTH_SHORT).show();
+                addProductToCart(product.getId(), currentQuantity);
             }
         });
 
         loadProductDetail();
+    }
+
+    private void addProductToCart(String productId, int quantity) {
+        buttonAddToCart.setEnabled(false);
+        ProgressBar progress = new ProgressBar(this);
+        progress.setVisibility(View.VISIBLE);
+
+        String token = TokenManager.getInstance(this).getToken();
+        ApiService apiService = ApiClient.getClient(this).create(ApiService.class);
+        CreateCartItemRequest requestBody = new CreateCartItemRequest(productId, quantity);
+        apiService.addToCart(token, requestBody).enqueue(new retrofit2.Callback<CartResponse>() {
+            @Override
+            public void onResponse(Call<CartResponse> call, Response<CartResponse> response) {
+                buttonAddToCart.setEnabled(true);
+                progress.setVisibility(View.GONE);
+                if (response.isSuccessful() && response.body() != null) {
+                    Toast.makeText(ProductDetailActivity.this, "Added to cart!", Toast.LENGTH_SHORT).show();
+                    CartBadgeHelper.updateCartBadge(ProductDetailActivity.this);
+                } else {
+                    Toast.makeText(ProductDetailActivity.this, "Failed to add to cart.", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<CartResponse> call, Throwable t) {
+                buttonAddToCart.setEnabled(true);
+                progress.setVisibility(View.GONE);
+                Toast.makeText(ProductDetailActivity.this, "Network error.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void loadProductDetail() {
@@ -116,7 +165,6 @@ public class ProductDetailActivity extends AppCompatActivity {
         NumberFormat formatter = NumberFormat.getInstance(new Locale("vi", "VN"));
         formatter.setMaximumFractionDigits(0);
         textPrice.setText("Price: " + formatter.format(p.getPrice()) + " ₫");
-        textStock.setText(p.getStock() > 0 ? "In stock: " + p.getStock() : "Out of stock");
         textSold.setText("Sold: " + p.getSold());
 
         if (p.getCategories() != null && !p.getCategories().isEmpty()) {

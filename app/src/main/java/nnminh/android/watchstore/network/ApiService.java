@@ -38,7 +38,7 @@ public interface ApiService {
     @GET("carts")
     Call<CartResponse> getCart(@Header("Authorization") String token);
 
-    @POST("carts")
+    @POST("carts/details")
     Call<CartResponse> addToCart(@Header("Authorization") String token, @Body CreateCartItemRequest request);
 
     @PATCH("carts/details/{id}")

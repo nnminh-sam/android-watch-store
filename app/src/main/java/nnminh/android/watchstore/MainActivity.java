@@ -12,6 +12,7 @@ import nnminh.android.watchstore.auth.TokenManager;
 import nnminh.android.watchstore.fragments.CartFragment;
 import nnminh.android.watchstore.fragments.HomeFragment;
 import nnminh.android.watchstore.fragments.ProfileFragment;
+import nnminh.android.watchstore.utils.CartBadgeHelper;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,6 +49,12 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        CartBadgeHelper.updateCartBadge(this);
     }
 
     private boolean loadFragment(Fragment fragment) {
