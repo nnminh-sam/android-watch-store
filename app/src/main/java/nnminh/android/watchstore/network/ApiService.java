@@ -35,17 +35,21 @@ public interface ApiService {
 
     // ──────── Cart ────────
 
-    @GET("cart")
+    @GET("carts")
     Call<CartResponse> getCart(@Header("Authorization") String token);
 
-    @POST("cart")
-    Call<ApiMessage> addToCart(@Header("Authorization") String token, @Body CartItemRequest request);
+    @POST("carts")
+    Call<CartResponse> addToCart(@Header("Authorization") String token, @Body CreateCartItemRequest request);
 
-    @PUT("cart")
-    Call<ApiMessage> updateCart(@Header("Authorization") String token, @Body CartItemRequest request);
+    @PATCH("carts/details/{id}")
+    Call<CartResponse> updateCart(
+            @Header("Authorization") String token,
+            @Path("id") String id,
+            @Body UpdateCartItemRequest request
+    );
 
-    @DELETE("cart/{productId}")
-    Call<ApiMessage> removeFromCart(@Header("Authorization") String token, @Path("productId") String productId);
+    @DELETE("carts/details/{id}")
+    Call<CartResponse> removeFromCart(@Header("Authorization") String token, @Path("id") String id);
 
 
     // ──────── Orders ────────

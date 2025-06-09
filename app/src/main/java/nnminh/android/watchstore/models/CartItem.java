@@ -1,14 +1,15 @@
 package nnminh.android.watchstore.models;
 
+import java.util.List;
+
 public class CartItem {
     private String id;
-    private String cartId;
-    private String productId;
+    private String product_id;
+    private String name;
+    private Long price;
     private int quantity;
-    private double price;
-    private String createdAt;
-    private String updatedAt;
-//    private Product product;
+    private List<Spec> specs;
+    private String asset;
 
     public String getId() {
         return id;
@@ -18,20 +19,28 @@ public class CartItem {
         this.id = id;
     }
 
-    public String getCartId() {
-        return cartId;
+    public String getProduct_id() {
+        return product_id;
     }
 
-    public void setCartId(String cartId) {
-        this.cartId = cartId;
+    public void setProduct_id(String product_id) {
+        this.product_id = product_id;
     }
 
-    public String getProductId() {
-        return productId;
+    public String getName() {
+        return name;
     }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Long getPrice() {
+        return price;
+    }
+
+    public void setPrice(Long price) {
+        this.price = price;
     }
 
     public int getQuantity() {
@@ -42,35 +51,19 @@ public class CartItem {
         this.quantity = quantity;
     }
 
-    public double getPrice() {
-        return price;
+    public List<Spec> getSpecs() {
+        return specs;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public void setSpecs(List<Spec> specs) {
+        this.specs = specs;
     }
 
-    public String getCreatedAt() {
-        return createdAt;
+    public String getAsset() {
+        return asset;
     }
 
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
+    public void setAsset(String asset) {
+        this.asset = asset;
     }
-
-    public String getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(String updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-//    public Product getProduct() {
-//        return product;
-//    }
-//
-//    public void setProduct(Product product) {
-//        this.product = product;
-//    }
 }
