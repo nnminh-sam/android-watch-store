@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import nnminh.android.watchstore.R;
 import nnminh.android.watchstore.activities.ChangePasswordActivity;
+import nnminh.android.watchstore.activities.OrderDetailActivity;
 import nnminh.android.watchstore.adapters.OrderAdapter;
 import nnminh.android.watchstore.models.*;
 import nnminh.android.watchstore.network.ApiClient;
@@ -103,7 +104,13 @@ public class ProfileFragment extends Fragment {
 
         // Orders RecyclerView
         recyclerViewOrders.setLayoutManager(new LinearLayoutManager(getContext()));
-        orderAdapter = new OrderAdapter(orderList);
+//        orderAdapter = new OrderAdapter(orderList);
+//        recyclerViewOrders.setAdapter(orderAdapter);
+        orderAdapter = new OrderAdapter(orderList, order -> {
+            Intent intent = new Intent(getContext(), OrderDetailActivity.class);
+            intent.putExtra("order_id", order.getId());
+            startActivity(intent);
+        });
         recyclerViewOrders.setAdapter(orderAdapter);
 
         buttonChangePassword.setOnClickListener(v -> {

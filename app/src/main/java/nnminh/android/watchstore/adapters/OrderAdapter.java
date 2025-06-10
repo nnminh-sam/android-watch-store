@@ -16,9 +16,12 @@ import java.util.*;
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
 
     private List<Order> orders = new ArrayList<>();
+    private OnOrderClickListener listener;
 
-    public OrderAdapter(List<Order> orders) {
+
+    public OrderAdapter(List<Order> orders, OnOrderClickListener listener) {
         if (orders != null) this.orders = orders;
+        this.listener = listener;
     }
 
     public void setOrders(List<Order> orders) {
@@ -37,6 +40,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     @Override
     public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
         holder.bind(orders.get(position));
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onOrderClick(orders.get(position));
+        });
     }
 
     @Override
@@ -74,5 +80,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
             textOrderStatus.setText(order.getStatus() != null ? order.getStatus() : "Unknown");
         }
+    }
+
+    public interface OnOrderClickListener {
+        void onOrderClick(Order order);
     }
 }

@@ -28,6 +28,7 @@
         <activity android:name=".activities.RegisterActivity" />
         <activity android:name=".activities.ProductDetailActivity"/>
         <activity android:name=".activities.ChangePasswordActivity"/>
+        <activity android:name=".activities.OrderDetailActivity"/>
     </application>
 
 </manifest>
