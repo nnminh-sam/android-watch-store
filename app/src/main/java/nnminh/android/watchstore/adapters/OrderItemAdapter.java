@@ -3,6 +3,7 @@ package nnminh.android.watchstore.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -43,19 +44,20 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.Orde
     }
 
     static class OrderItemViewHolder extends RecyclerView.ViewHolder {
-        TextView textProduct, textQuantity, textPrice;
+        TextView textProduct, textPrice, textTotal;
+        ImageView imageProduct;
 
         public OrderItemViewHolder(@NonNull View itemView) {
             super(itemView);
             textProduct = itemView.findViewById(R.id.textProduct);
-            textQuantity = itemView.findViewById(R.id.textQuantity);
             textPrice = itemView.findViewById(R.id.textPrice);
+            textTotal = itemView.findViewById(R.id.textTotal);
         }
 
         public void bind(OrderItem item) {
             textProduct.setText(item.getName());
-            textQuantity.setText("Qty: " + item.getQuantity());
             textPrice.setText(String.format("₫ %,d", (long)item.getPrice()));
+            textTotal.setText("Total (");
         }
     }
 }
