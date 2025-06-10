@@ -1,6 +1,7 @@
 package nnminh.android.watchstore.activities;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 import androidx.annotation.Nullable;
@@ -11,7 +12,6 @@ import nnminh.android.watchstore.R;
 import nnminh.android.watchstore.adapters.OrderItemAdapter;
 import nnminh.android.watchstore.models.Order;
 import nnminh.android.watchstore.models.SingleOrderResponse;
-import nnminh.android.watchstore.models.OrderItem;
 import nnminh.android.watchstore.network.ApiClient;
 import nnminh.android.watchstore.network.ApiService;
 import nnminh.android.watchstore.auth.TokenManager;
@@ -25,10 +25,12 @@ import java.util.*;
 
 public class OrderDetailActivity extends AppCompatActivity {
 
-    private TextView textOrderId, textOrderDate, textOrderTotal, textOrderStatus, textOrderAddress, textError;
+    private TextView textOrderId, textOrderDate, textOrderTotal, textOrderStatus, textError;
+    private TextView textDeliveryName, textPhoneNumber, textOrderAddress;
     private RecyclerView recyclerViewItems;
     private ProgressBar progressBar;
     private OrderItemAdapter itemAdapter;
+    private ImageButton buttonBack;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,10 +41,15 @@ public class OrderDetailActivity extends AppCompatActivity {
         textOrderDate = findViewById(R.id.textOrderDate);
         textOrderTotal = findViewById(R.id.textOrderTotal);
         textOrderStatus = findViewById(R.id.textOrderStatus);
+        textDeliveryName = findViewById(R.id.textDeliveryName);
+        textPhoneNumber = findViewById(R.id.textPhoneNumber);
         textOrderAddress = findViewById(R.id.textOrderAddress);
         textError = findViewById(R.id.textError);
         recyclerViewItems = findViewById(R.id.recyclerViewItems);
         progressBar = findViewById(R.id.progressBar);
+
+        buttonBack = findViewById(R.id.buttonBack);
+        buttonBack.setOnClickListener(v -> finish());
 
         recyclerViewItems.setLayoutManager(new LinearLayoutManager(this));
         itemAdapter = new OrderItemAdapter(new ArrayList<>());
@@ -60,7 +67,7 @@ public class OrderDetailActivity extends AppCompatActivity {
 
     private void loadOrderDetail(String orderId) {
         showLoading(true);
-        String token = "Bearer " + TokenManager.getInstance(this).getToken();
+        String token = TokenManager.getInstance(this).getToken();
         ApiService apiService = ApiClient.getClient(this).create(ApiService.class);
         apiService.getOrderById(token, orderId).enqueue(new Callback<SingleOrderResponse>() {
             @Override
@@ -84,7 +91,7 @@ public class OrderDetailActivity extends AppCompatActivity {
     }
 
     private void bindOrderDetail(Order order) {
-        textOrderId.setText("Order #" + order.getId());
+        textOrderId.setText("ORDER #" + order.getOrder_number().toUpperCase());
 
         // Format date
         String dateStr = order.getCreated_at().toString();
@@ -105,10 +112,15 @@ public class OrderDetailActivity extends AppCompatActivity {
 
         textOrderStatus.setText(order.getStatus() != null ? order.getStatus() : "Unknown");
 
-        if (order.getDelivery_information().getSpecific_address() != null)
-            textOrderAddress.setText(order.getDelivery_information().getSpecific_address());
-        else
-            textOrderAddress.setText("No address info");
+        if (order.getDelivery_information() != null) {
+            textDeliveryName.setText("Receiver: " + order.getDelivery_information().getFull_name());
+            textPhoneNumber.setText("Phone number: " + order.getDelivery_information().getPhone_number());
+            textOrderAddress.setText("Delivery address: " + order.getDelivery_information().getSpecific_address());
+        } else {
+            textDeliveryName.setText("Receiver: John Doe (This is sample delivery information)");
+            textPhoneNumber.setText("Phone number: 0123456789 (This is sample delivery information)");
+            textOrderAddress.setText("Delivery address: 123 Street, City, Country (This is sample delivery information)");
+        }
 
         if (order.getDetails() != null)
             itemAdapter.setItems(order.getDetails());
